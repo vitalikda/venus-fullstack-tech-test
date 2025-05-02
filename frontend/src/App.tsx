@@ -7,7 +7,11 @@ import { TREASURY_ACCOUNT_ADDRESS, XVS_CONTRACT_ADDRESS } from './config'
 import { formatter } from './utils/numbers'
 
 function App() {
-  const { data: marketSize } = useQuery({
+  const {
+    data: marketSize,
+    isPending: isMarketSizePending,
+    refetch: refetchMarketSize,
+  } = useQuery({
     queryKey: ['marketSize'],
     queryFn: async () => {
       const response = await fetch(
@@ -18,7 +22,11 @@ function App() {
     },
   })
 
-  const { data: xvsBalance } = useReadContract({
+  const {
+    data: xvsBalance,
+    isPending: isXvsBalancePending,
+    refetch: refetchXvsBalance,
+  } = useReadContract({
     abi: XVS_ABI,
     address: XVS_CONTRACT_ADDRESS,
     functionName: 'balanceOf',
@@ -49,7 +57,14 @@ function App() {
               <p className="text-[1rem] text-[#9597A1]">{value}</p>
             </div>
           ))}
-          <button className="mt-0.5 cursor-pointer rounded-lg bg-[#3A78FF] px-6 py-3 md:mt-3 md:w-fit">
+          <button
+            onClick={() => {
+              refetchMarketSize()
+              refetchXvsBalance()
+            }}
+            disabled={isMarketSizePending || isXvsBalancePending}
+            className="mt-0.5 cursor-pointer rounded-lg bg-[#3A78FF] px-6 py-3 disabled:opacity-50 md:mt-3 md:w-fit"
+          >
             Refresh
           </button>
         </div>
