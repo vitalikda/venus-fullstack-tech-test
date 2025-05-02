@@ -49,9 +49,10 @@ app.get("/markets/tvl", async (req: Request, res: Response) => {
   const [rows, _buff] = await db.query<RowDataPacket[]>(
     `SELECT SUM(total_supply_cents) AS marketTvl FROM market`
   );
+  const marketTvl = Number(rows[0].marketTvl || 0);
 
   db.release();
-  return res.json({ marketTvl: rows[0].marketTvl });
+  return res.json({ marketTvl });
 });
 
 app.listen(port, () => {

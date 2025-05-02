@@ -1,9 +1,34 @@
+import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useReadContract } from 'wagmi'
+import { XVS_ABI } from './abis/xvsAbi'
 import illustration from './assets/illustration.png'
+import { TREASURY_ACCOUNT_ADDRESS, XVS_CONTRACT_ADDRESS } from './config'
 import { formatter } from './utils/numbers'
 
 function App() {
-  const treasuryBalance = '1111.111111111111111111'
-  const marketSize = '1111.11'
+  const { data: marketSize } = useQuery({
+    queryKey: ['marketSize'],
+    queryFn: async () => {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + '/markets/tvl'
+      )
+      const data = await response.json()
+      return data?.marketTvl as number
+    },
+  })
+
+  const { data: xvsBalance } = useReadContract({
+    abi: XVS_ABI,
+    address: XVS_CONTRACT_ADDRESS,
+    functionName: 'balanceOf',
+    args: [TREASURY_ACCOUNT_ADDRESS],
+  })
+
+  const treasuryBalance = useMemo(() => {
+    if (!xvsBalance) return
+    return Number(xvsBalance / BigInt(10 ** 18))
+  }, [xvsBalance])
 
   return (
     <div className="mx-auto h-full w-full max-w-5xl px-2 pt-16 sm:px-6">
@@ -12,11 +37,11 @@ function App() {
           {[
             {
               label: 'Treasury balance',
-              value: formatter.token(Number(treasuryBalance)),
+              value: formatter.token(Number(treasuryBalance ?? 0)),
             },
             {
               label: 'Market size',
-              value: formatter.usd(Number(marketSize)),
+              value: formatter.usd(Number(marketSize ?? 0)),
             },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col gap-1">
