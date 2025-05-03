@@ -1,8 +1,8 @@
-const isNumber = (value: unknown) => typeof value === 'number' && !isNaN(value)
+import BigNumber from 'bignumber.js'
 
 export const formatter = {
-  usd: (value: number, decimals = 2) => {
-    if (!isNumber(value)) return '$0'
+  usd: (value: number | undefined, decimals = 2) => {
+    if (!value || isNaN(value)) return '$0'
     return value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -10,10 +10,8 @@ export const formatter = {
       maximumFractionDigits: decimals,
     })
   },
-  token: (value: number, maximumFractionDigits = 18) => {
-    if (!isNumber(value)) return '0'
-    return value.toLocaleString('en-US', {
-      maximumFractionDigits,
-    })
+  token: (value: BigNumber.Value | undefined, decimals = 18) => {
+    if (!value) return '0'
+    return BigNumber(value).toFormat(decimals)
   },
 }

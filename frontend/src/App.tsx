@@ -1,9 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import BigNumber from 'bignumber.js'
 import { useMemo } from 'react'
-import { useReadContract } from 'wagmi'
-import { XVS_ABI } from './abis/xvsAbi'
 import illustration from './assets/illustration.png'
-import { TREASURY_ACCOUNT_ADDRESS, XVS_CONTRACT_ADDRESS } from './config'
+import { useMarketSize } from './hooks/use-market-size/use-market-size'
+import { useXvsBalance } from './hooks/use-xvs-balance'
 import { formatter } from './utils/numbers'
 
 function App() {
@@ -11,31 +10,17 @@ function App() {
     data: marketSize,
     isPending: isMarketSizePending,
     refetch: refetchMarketSize,
-  } = useQuery({
-    queryKey: ['marketSize'],
-    queryFn: async () => {
-      const response = await fetch(
-        import.meta.env.VITE_API_URL + '/markets/tvl'
-      )
-      const data = await response.json()
-      return data?.marketTvl as number
-    },
-  })
+  } = useMarketSize()
 
   const {
     data: xvsBalance,
     isPending: isXvsBalancePending,
     refetch: refetchXvsBalance,
-  } = useReadContract({
-    abi: XVS_ABI,
-    address: XVS_CONTRACT_ADDRESS,
-    functionName: 'balanceOf',
-    args: [TREASURY_ACCOUNT_ADDRESS],
-  })
+  } = useXvsBalance()
 
   const treasuryBalance = useMemo(() => {
     if (!xvsBalance) return
-    return Number(xvsBalance / BigInt(10 ** 18))
+    return BigNumber(xvsBalance).dividedBy(10 ** 18)
   }, [xvsBalance])
 
   return (
@@ -45,11 +30,11 @@ function App() {
           {[
             {
               label: 'Treasury balance',
-              value: formatter.token(Number(treasuryBalance ?? 0)),
+              value: `${formatter.token(treasuryBalance)} XVS`,
             },
             {
               label: 'Market size',
-              value: formatter.usd(Number(marketSize ?? 0)),
+              value: formatter.usd(marketSize),
             },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col gap-1">
