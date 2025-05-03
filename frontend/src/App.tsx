@@ -26,7 +26,7 @@ function App() {
   return (
     <div className="mx-auto h-full w-full max-w-5xl px-2 pt-16 sm:px-6">
       <div className="flex flex-col-reverse overflow-hidden rounded-3xl bg-[#282931] md:flex-row">
-        <div className="flex w-full flex-col gap-3 p-4 text-center md:max-w-[265px] md:p-6 md:text-left">
+        <div className="flex w-full flex-col gap-3 p-4 text-center md:max-w-xs md:p-6 md:text-left">
           {[
             {
               label: 'Treasury balance',
